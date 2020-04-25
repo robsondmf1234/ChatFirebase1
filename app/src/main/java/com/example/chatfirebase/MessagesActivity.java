@@ -70,6 +70,7 @@ public class MessagesActivity extends AppCompatActivity {
                     }
                 });
     }
+    //testando
 
     private void verifyAuthentication() {
         if (FirebaseAuth.getInstance().getUid() == null) {
