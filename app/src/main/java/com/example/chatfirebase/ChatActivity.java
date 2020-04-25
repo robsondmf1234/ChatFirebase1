@@ -142,10 +142,12 @@ public class ChatActivity extends AppCompatActivity {
 
                             Contact contact = new Contact();
                             contact.setUuid(toId);
+                            contact.setUsername(user.getUsername());
                             contact.setPhotoUrl(user.getProfileUrl());
                             contact.setTimestamp(message.getTimestamp());
                             contact.setLastMessage(message.getText());
-                            
+
+                            //criando uma nova coleção chamado last-messages para armazenar as ultimas mensagens enviadas
                             FirebaseFirestore.getInstance().collection("/last-messages")
                                     .document(fromId)
                                     .collection("contacts")
@@ -167,6 +169,20 @@ public class ChatActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             Log.d("Teste", documentReference.getId());
+
+                            Contact contact = new Contact();
+                            contact.setUuid(toId);
+                            contact.setUsername(user.getUsername());
+                            contact.setPhotoUrl(user.getProfileUrl());
+                            contact.setTimestamp(message.getTimestamp());
+                            contact.setLastMessage(message.getText());
+
+
+                            FirebaseFirestore.getInstance().collection("/last-messages")
+                                    .document(toId)
+                                    .collection("contacts")
+                                    .document(fromId)
+                                    .set(contact);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

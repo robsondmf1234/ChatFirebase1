@@ -35,7 +35,7 @@ public class ContactsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
-        RecyclerView rv = findViewById(R.id.recycler);
+        RecyclerView rv = findViewById(R.id.recycler_contact);
 
         adapter = new GroupAdapter();
         rv.setAdapter(adapter);
