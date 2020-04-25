@@ -73,7 +73,7 @@ public class ChatActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        //pegando a referencia do usuario
+                        //pegando a referencia do usuario proprio
                         me = documentSnapshot.toObject(User.class);
                         fetchMessages();
                     }
@@ -85,6 +85,7 @@ public class ChatActivity extends AppCompatActivity {
             String fromId = me.getUuid();
             String toId = user.getUuid();
 
+            //pegando a lista de coleções
             FirebaseFirestore.getInstance().collection("/conversations")
                     .document(fromId)
                     .collection(toId)
@@ -92,11 +93,13 @@ public class ChatActivity extends AppCompatActivity {
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                            //pegando as ,mudan;as do documentos
+                            //pegando as mudanças do documentos
                             List<DocumentChange> documentChanges = queryDocumentSnapshots.getDocumentChanges();
                             if (documentChanges != null) {
                                 for (DocumentChange doc : documentChanges) {
+                                    //verificando se o objeto acabou de ser inserido
                                     if (doc.getType() == DocumentChange.Type.ADDED) {
+                                        //transformando o objeto ao tipo Message
                                         Message message = doc.getDocument().toObject(Message.class);
                                         //adicionando mensagem ao adapter
                                         adapter.add(new MessageItem(message));
@@ -114,12 +117,12 @@ public class ChatActivity extends AppCompatActivity {
         editChat.setText(null);
 
         //pegando o id do usuario
-        String fromId = FirebaseAuth.getInstance().getUid();
+        final String fromId = FirebaseAuth.getInstance().getUid();
         //pegando o id do usuario remetente
-        String toId = user.getUuid();
+        final String toId = user.getUuid();
         long timestamp = System.currentTimeMillis();
 
-        Message message = new Message();
+        final Message message = new Message();
         message.setFromId(fromId);
         message.setToId(toId);
         message.setTimestamp(timestamp);
@@ -127,14 +130,27 @@ public class ChatActivity extends AppCompatActivity {
 
         if (!message.getText().isEmpty()) {
             //criando a coleção no firebase
-            FirebaseFirestore.getInstance().collection("conversation")
+            FirebaseFirestore.getInstance().collection("conversations")
                     .document(fromId)
                     .collection(toId)
                     .add(message)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        //nova mensagem adicionada
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             Log.d("Teste", documentReference.getId());
+
+                            Contact contact = new Contact();
+                            contact.setUuid(toId);
+                            contact.setPhotoUrl(user.getProfileUrl());
+                            contact.setTimestamp(message.getTimestamp());
+                            contact.setLastMessage(message.getText());
+                            
+                            FirebaseFirestore.getInstance().collection("/last-messages")
+                                    .document(fromId)
+                                    .collection("contacts")
+                                    .document(toId)
+                                    .set(contact);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -143,7 +159,7 @@ public class ChatActivity extends AppCompatActivity {
                             Log.e("Teste", e.getMessage(), e);
                         }
                     });
-            FirebaseFirestore.getInstance().collection("conversation")
+            FirebaseFirestore.getInstance().collection("conversations")
                     .document(toId)
                     .collection(fromId)
                     .add(message)
